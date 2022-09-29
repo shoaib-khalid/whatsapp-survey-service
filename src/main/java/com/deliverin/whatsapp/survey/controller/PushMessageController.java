@@ -55,7 +55,7 @@ public class PushMessageController {
 
 
     @PostMapping(path = {"/survey/webhook"}, name = "push-template-message-post")
-    public ResponseEntity<HttpResponse> webhook(HttpServletRequest request, @RequestBody Object  jsonBody) throws Exception {
+    public ResponseEntity<HttpResponse> webhook(HttpServletRequest request, @RequestBody Object jsonBody) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
         Gson gson = new Gson();
@@ -138,7 +138,7 @@ public class PushMessageController {
         }
 
         Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "Incoming message. Msisdn:" + phone + " UserInput:" + userInput);
-        Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "Incoming message. replyId:" + replyId );
+        Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "Incoming message. replyId:" + replyId);
 
         List<Object[]> userSession = userSessionRepository.findActiveSession(phone);
         Interactive interactiveMsg = null;
@@ -189,6 +189,46 @@ public class PushMessageController {
                     if (stage == 0) {
                         interactiveMsg = SessionController.GenerateResponseMessage(phone, stage, userInput);
                         session.setStage(1);
+                    } else if (stage == 1) {
+                        interactiveMsg = SessionController.GenerateResponseMessage(phone, stage, userInput);
+                        session.setStage(2);
+                    } else {
+                        String transaction = TxIdUtil.generateReferenceId("SUR");
+                        CustomerSurvey customer = customerSurveyRepository.getOne(phone);
+
+                        RestTemplate restTemplate = new RestTemplate();
+                        HttpHeaders headers = new HttpHeaders();
+                        WhatsappMessage r = new WhatsappMessage();
+                        r.setGuest(false);
+                        r.setRecipientIds(Collections.singletonList(customer.getCustomerPhone()));
+                        r.setRefId(customer.getCustomerPhone());
+                        r.setReferenceId(transaction);
+                        r.setOrderId(transaction);
+                        r.setMerchantToken("");
+
+                        WhatsappTemplate template = new WhatsappTemplate();
+                        template.setName("deliverin_survey_thankyou");
+                        String[] message = {customer.getParam1()};
+
+                        template.setParameters(message);
+
+                        r.setTemplate(template);
+                        HttpEntity<WhatsappMessage> httpEntity = new HttpEntity<>(r, headers);
+                        Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "url: " + whatsappServiceUrl, "");
+                        Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "httpEntity: " + httpEntity, "");
+
+                        try {
+                            ResponseEntity<String> res = restTemplate.postForEntity(whatsappServiceUrl, httpEntity, String.class);
+
+                            if (res.getStatusCode() == HttpStatus.ACCEPTED || res.getStatusCode() == HttpStatus.OK) {
+                                Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "res: " + res.getBody(), "");
+                            } else {
+                                Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "could not send Survey res: " + res, "");
+                            }
+
+                        } catch (Exception ex) {
+                            Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "could not send Survey res: " + ex.getMessage(), "");
+                        }
                     }
                 } else {
                     if (replyId != null && replyId.startsWith("SUR_")) {
@@ -299,6 +339,8 @@ public class PushMessageController {
                 } catch (Exception ex) {
                     Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "could not send Survey res: " + ex.getMessage(), "");
                 }
+                customer.setSentSurvey(true);
+                customerSurveyRepository.save(customer);
 
             }
         }

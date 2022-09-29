@@ -23,5 +23,7 @@ public class CustomerSurvey {
     String customerName;
     Boolean sentSurvey;
 
+    String param1;
+
 
 }
