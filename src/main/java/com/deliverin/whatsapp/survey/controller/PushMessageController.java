@@ -117,13 +117,6 @@ public class PushMessageController {
                     replyId = listReply.get("id").getAsString();
                     replyTitle = listReply.get("title").getAsString();
                 }
-            } else if (type.equals("button")) {
-                JsonObject button = messages.get("button").getAsJsonObject();
-                if (button.get("payload").getAsString().startsWith("SUR_SURE")) {
-                    sendSurvey = true;
-                } else {
-                    sendSurvey = false;
-                }
             }
             List<String> mp = new ArrayList<>();
             mp.add(phone);
