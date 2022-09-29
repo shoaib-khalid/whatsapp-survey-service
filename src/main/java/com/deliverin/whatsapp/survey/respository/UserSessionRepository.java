@@ -1,6 +1,6 @@
 package com.deliverin.whatsapp.survey.respository;
 
-import com.deliverin.whatsapp.survey.model.UserSession;
+import com.deliverin.whatsapp.survey.model.dto.UserSession;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;

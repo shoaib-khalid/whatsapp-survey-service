@@ -1,4 +1,4 @@
-package com.deliverin.whatsapp.survey.model;
+package com.deliverin.whatsapp.survey.model.dao;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;

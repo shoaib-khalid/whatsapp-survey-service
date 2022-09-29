@@ -54,7 +54,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/configuration/security",
                         "/swagger-ui.html",
                         "/customeractivity/**",
-                        "/webjars/**", "/message/test/**").permitAll()
+                        "/webjars/**", "/message/survey/**").permitAll()
                 .anyRequest().authenticated().and()
                 .exceptionHandling().authenticationEntryPoint(sessionAuthenticationEntryPoint).and()
                 .sessionManagement()

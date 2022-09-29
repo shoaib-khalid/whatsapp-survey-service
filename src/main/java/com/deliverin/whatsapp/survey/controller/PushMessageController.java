@@ -1,14 +1,12 @@
 package com.deliverin.whatsapp.survey.controller;
 
 import com.deliverin.whatsapp.survey.SurveyApplication;
-import com.deliverin.whatsapp.survey.model.CustomerSurvey;
-import com.deliverin.whatsapp.survey.model.UserSession;
-import com.deliverin.whatsapp.survey.model.WhatsappMessage;
-import com.deliverin.whatsapp.survey.model.WhatsappTemplate;
-import com.deliverin.whatsapp.survey.provider.component.BroadcastTemplate;
+import com.deliverin.whatsapp.survey.model.dao.WhatsappMessage;
+import com.deliverin.whatsapp.survey.model.dao.WhatsappTemplate;
+import com.deliverin.whatsapp.survey.model.dto.CustomerSurvey;
+import com.deliverin.whatsapp.survey.model.dto.UserSession;
 import com.deliverin.whatsapp.survey.provider.component.ButtonParameter;
 import com.deliverin.whatsapp.survey.provider.component.Interactive;
-import com.deliverin.whatsapp.survey.provider.template.Template;
 import com.deliverin.whatsapp.survey.provider.whatsapp.FacebookCloud;
 import com.deliverin.whatsapp.survey.respository.CustomerSurveyRepository;
 import com.deliverin.whatsapp.survey.respository.UserPaymentRepository;
@@ -292,10 +290,7 @@ public class PushMessageController {
 
                 WhatsappTemplate template = new WhatsappTemplate();
                 template.setName("deliverin_survey");
-                String[] message = {"Hi (name), thank you for purchasing from us! Can you spare 2 mins to help us improve our service"};
-
-
-
+                String[] message = {customer.getCustomerName()};
 
                 template.setParameters(message);
 
@@ -303,13 +298,13 @@ public class PushMessageController {
                 ButtonParameter buttonParameter1 = new ButtonParameter();
                 buttonParameter1.setIndex(0);
                 buttonParameter1.setSub_type("quick_reply");
-                String[] params = {surButtonReplyPrefix+"_SURE"};
+                String[] params = {surButtonReplyPrefix + "_SURE"};
                 buttonParameter1.setParameters(params);
                 buttonParameters[0] = buttonParameter1;
                 ButtonParameter buttonParameter2 = new ButtonParameter();
                 buttonParameter2.setIndex(1);
                 buttonParameter2.setSub_type("quick_reply");
-                String[] params2 = {surButtonReplyPrefix+"_NOPE"};
+                String[] params2 = {surButtonReplyPrefix + "_NOPE"};
                 buttonParameter2.setParameters(params2);
                 buttonParameters[1] = buttonParameter2;
                 template.setButtonParameters(buttonParameters);

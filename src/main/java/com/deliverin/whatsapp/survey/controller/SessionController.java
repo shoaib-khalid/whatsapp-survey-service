@@ -6,8 +6,8 @@
 package com.deliverin.whatsapp.survey.controller;
 
 import com.deliverin.whatsapp.survey.SurveyApplication;
-import com.deliverin.whatsapp.survey.model.UserPayment;
-import com.deliverin.whatsapp.survey.model.UserSession;
+import com.deliverin.whatsapp.survey.model.dto.UserPayment;
+import com.deliverin.whatsapp.survey.model.dto.UserSession;
 import com.deliverin.whatsapp.survey.provider.component.*;
 import com.deliverin.whatsapp.survey.respository.UserPaymentRepository;
 import com.deliverin.whatsapp.survey.respository.UserSessionRepository;
@@ -43,7 +43,7 @@ public class SessionController {
 
             //main menu
             headerText = "Q1) How satisfied are you with our service so far?";
-            String storeDescription = "";
+            String storeDescription = "Please Click Below to View the options provided";
 //            if (store.description!=null) {
 //                storeDescription = store.description.replaceAll("<[^>]*>", "");
 //                storeDescription = storeDescription.replaceAll("amp;","");
@@ -56,11 +56,11 @@ public class SessionController {
             section1.setTitle("Satisfaction ");
             List<Row> rowList=new ArrayList<>();
 
-            Row row1 = new Row("a", "Very Satisfied", "Very satisfied");
-            Row row2 = new Row("b", "Satisfied", "satisfied");
-            Row row3 = new Row("c", "Neutral", "Neutral");
-            Row row4 = new Row("d", "Unsatisfied", "Unsatisfied");
-            Row row5 = new Row("e", "Very unsatisfied", "Very unsatisfied");
+            Row row1 = new Row("SUR_a", "Very Satisfied", "Very satisfied");
+            Row row2 = new Row("SUR_b", "Satisfied", "satisfied");
+            Row row3 = new Row("SUR_c", "Neutral", "Neutral");
+            Row row4 = new Row("SUR_d", "Unsatisfied", "Unsatisfied");
+            Row row5 = new Row("SUR_e", "Very unsatisfied", "Very unsatisfied");
             rowList.add(row1);
             rowList.add(row2);
             rowList.add(row3);
@@ -109,9 +109,9 @@ public class SessionController {
             section1.setTitle("Improvised");
             List<Row> rowList=new ArrayList<>();
 
-            Row row1 = new Row("a", "Food options", "");
-            Row row2 = new Row("b", "Delivery Time", "");
-            Row row3 = new Row("c", "Checkout / Payment process", "");
+            Row row1 = new Row("SUR_a", "Food options", "");
+            Row row2 = new Row("SUR_b", "Delivery Time", "");
+            Row row3 = new Row("SUR_c", "Checkout / Payment process", "");
 
             rowList.add(row1);
             rowList.add(row2);

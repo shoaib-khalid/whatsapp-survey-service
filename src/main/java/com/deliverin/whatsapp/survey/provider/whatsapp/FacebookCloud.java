@@ -1,15 +1,13 @@
 package com.deliverin.whatsapp.survey.provider.whatsapp;
 
 import com.deliverin.whatsapp.survey.SurveyApplication;
-import com.deliverin.whatsapp.survey.model.WhatsappMessage;
+import com.deliverin.whatsapp.survey.model.dao.WhatsappMessage;
 import com.deliverin.whatsapp.survey.provider.component.Component;
 import com.deliverin.whatsapp.survey.provider.component.Interactive;
 import com.deliverin.whatsapp.survey.provider.component.Language;
 import com.deliverin.whatsapp.survey.provider.component.Parameter;
 import com.deliverin.whatsapp.survey.provider.template.*;
 import com.google.gson.Gson;
-import com.deliverin.whatsapp.survey.SurveyApplication;
-import com.deliverin.whatsapp.survey.model.WhatsappMessage;
 import com.deliverin.whatsapp.survey.utils.HttpPostConn;
 import com.deliverin.whatsapp.survey.utils.HttpResult;
 import com.deliverin.whatsapp.survey.utils.Logger;

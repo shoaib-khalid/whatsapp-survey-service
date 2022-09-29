@@ -1,7 +1,7 @@
 package com.deliverin.whatsapp.survey.controller;
 
 import com.deliverin.whatsapp.survey.SurveyApplication;
-import com.deliverin.whatsapp.survey.model.WhatsappMessage;
+import com.deliverin.whatsapp.survey.model.dao.WhatsappMessage;
 import com.deliverin.whatsapp.survey.utils.Logger;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;

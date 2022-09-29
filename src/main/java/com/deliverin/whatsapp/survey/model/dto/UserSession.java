@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.deliverin.whatsapp.survey.model;
+package com.deliverin.whatsapp.survey.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
@@ -23,13 +23,15 @@ import java.util.Date;
 @Entity
 @Getter
 @Setter
-@Table(name = "payment")
+@Table(name = "user_session")
 @ToString
-public class UserPayment {
+public class UserSession {
     
     @Id
-    private String paymentOrderId;
-   
+    private String msisdn;
+    
+    private Integer stage;
+    
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -39,20 +41,16 @@ public class UserPayment {
     @Temporal(TemporalType.TIMESTAMP)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updated;
-       
+    
+    @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date expiry;
+    
+    private String cartId;
+    
     private String name;
     
     private String email;
-    
-    private String paymentDetail;
-    
-    private String paymentHash;
-    
-    private Double paymentAmount;
-    
-    private String paymentLink;
-    
-    private String msisdn;
        
         
 }

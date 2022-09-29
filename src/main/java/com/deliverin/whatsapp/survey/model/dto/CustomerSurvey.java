@@ -1,4 +1,4 @@
-package com.deliverin.whatsapp.survey.model;
+package com.deliverin.whatsapp.survey.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
