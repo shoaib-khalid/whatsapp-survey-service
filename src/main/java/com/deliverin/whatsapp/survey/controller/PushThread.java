@@ -31,10 +31,10 @@ public class PushThread {
         this.request = request;
     }
 
-//    @Scheduled(cron = "${delivery-service:0 0/02" +
-//            "" +
-//            "" +
-//            " * * * ?}")
+    @Scheduled(cron = "${delivery-service:0 0/02" +
+            "" +
+            "" +
+            " * * * ?}")
     public void dailyScheduler() throws ParseException {
         try {
 
