@@ -90,17 +90,13 @@ public class SessionController {
         }
 
        else if (stage==1) {
-//            Store store = ProductService.GetStoreDetails();
             Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "Second Question");
             List<Category> categoryList = ProductService.GetProductCategory();
 
             //main menu
             headerText = "Q2) What would you like to see improved in our service?";
-            String storeDescription = "";
-//            if (store.description!=null) {
-//                storeDescription = store.description.replaceAll("<[^>]*>", "");
-//                storeDescription = storeDescription.replaceAll("amp;","");
-//            }
+            String storeDescription = "Please Click Below to View the options provided";
+
             bodyText = storeDescription;
             Action action = new Action();
             action.setButton("Rating");
