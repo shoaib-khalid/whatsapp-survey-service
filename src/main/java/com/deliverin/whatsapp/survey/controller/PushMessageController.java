@@ -27,10 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 
 @RestController
@@ -58,9 +55,12 @@ public class PushMessageController {
 
 
     @PostMapping(path = {"/survey/webhook"}, name = "push-template-message-post")
-    public ResponseEntity<HttpResponse> webhook(HttpServletRequest request, @RequestBody JsonObject json) throws Exception {
+    public ResponseEntity<HttpResponse> webhook(HttpServletRequest request, @RequestBody Object  jsonBody) throws Exception {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
+        Gson gson = new Gson();
+
+        String json = gson.toJson(jsonBody, LinkedHashMap.class);
 
         Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "callback-message-get, URL:  " + json);
         JsonObject jsonResp = new Gson().fromJson(String.valueOf(json), JsonObject.class);
