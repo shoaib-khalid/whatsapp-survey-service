@@ -58,7 +58,7 @@ public class SwaggerConfig {
                 .description("Order through Whatsapp")
                 .termsOfServiceUrl("not added yet")
                 .license("not added yet")
-                .licenseUrl("").version("0.0.1").build();
+                .licenseUrl("").version("0.0.2").build();
     }
 
     public static final String DEFAULT_INCLUDE_PATTERN = "/.*";

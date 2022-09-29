@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.deliverin.whatsapp</groupId>
     <artifactId>whatsapp-survey-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
     <name>whatsapp-survey-service</name>
     <description>DeliverIn Survey</description>
     <properties>

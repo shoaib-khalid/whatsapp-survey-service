@@ -62,7 +62,7 @@ public class PushMessageController {
         String logprefix = request.getRequestURI() + " ";
         HttpResponse response = new HttpResponse(request.getRequestURI());
 
-        Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "callback-message-get, URL:  " + request.getRequestURI());
+        Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "callback-message-get, URL:  " + json);
         JsonObject jsonResp = new Gson().fromJson(String.valueOf(json), JsonObject.class);
         JsonObject entry = jsonResp.get("entry").getAsJsonArray().get(0).getAsJsonObject();
         JsonObject changes = entry.get("changes").getAsJsonArray().get(0).getAsJsonObject();
@@ -160,68 +160,29 @@ public class PushMessageController {
             } else {
                 int stage = session.getStage();
                 if (type.equals("input")) {
-                    if (stage == 1) {
+                    if (stage == 0) {
                         interactiveMsg = SessionController.GenerateResponseMessage(phone, stage, userInput);
                         session.setStage(1);
-                    }
-/*                    else if (stage==1) {
-                        session.setStage(2);
+                    } else if (stage == 1) {
                         interactiveMsg = SessionController.GenerateResponseMessage(phone, stage, userInput);
-                    } else if (stage==2) {
+                        session.setStage(2);
+                    } else if (stage == 2) {
                         //generate payment form
                         session.setStage(3);
                         session.setEmail(userInput);
-                        session.setExpiry(DateTimeUtil.expiryTimestamp(120));            
+                        session.setExpiry(DateTimeUtil.expiryTimestamp(120));
                         userSessionRepository.save(session);
-                        
-                        Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "Place Order for name:"+session.getName()+" email:"+session.getEmail());
-                        Order order = SessionController.PlaceOrder(session.getCartId(), phone, stage, session.getName(), session.getEmail(), session, userSessionRepository, userPaymentRepository);
-                         
-                        try {
-                            if (order!=null) {
-                                //success create order
-                                WhatsappTemplate template = new WhatsappTemplate();
-                                template.setName("deliverin_payment_link2"); 
-                                String[] params = {order.id};
-                                template.setParametersButton(params);
-                                messageBody.setTemplate(template);
-                                FacebookCloud.sendTemplateMessage(messageBody);
-                                response.setSuccessStatus(HttpStatus.CREATED);       
-                            } else {
-                                //fail
-                                String responseMsg = "Fail to create order. Please try again later";
-                                messageBody.setText(responseMsg);
-                                FacebookCloud.sendNotificationMessage(messageBody);
-                                response.setSuccessStatus(HttpStatus.CREATED);
-                            }                            
-                        } catch (Exception exp) {
-                            Logger.application.error(Logger.pattern, SurveyApplication.VERSION, logprefix, "Error sending message : ", exp);
-                            response.setMessage(exp.getMessage());
-                            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(response);
-                        }
 
                         Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "Send message completed");
                         return ResponseEntity.status(HttpStatus.OK).body(response);
-                    }*/
+                    }
                 } else {
                     stage = 0;
                     session.setStage(stage);
                     interactiveMsg = SessionController.GenerateResponseMessage(phone, stage, userInput);
-
-//                    if (replyId!=null && replyId.startsWith("C")) {
-//                        interactiveMsg = SessionController.UserSelectCategory(phone, stage, replyId, replyTitle);
-//                    } else if (replyId!=null && replyId.startsWith("P")) {
-//                        interactiveMsg = SessionController.UserSelectProduct(phone, stage, replyId, replyTitle);
-//                        Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "Interactive body:"+interactiveMsg.getBody().toString());
-//                    } else if (replyId!=null && replyId.startsWith("ADD")) {
-//                        interactiveMsg = SessionController.UserAddToCart(session.getCartId(), phone, stage, replyId, replyTitle);
-//                    } else if (replyId!=null && replyId.startsWith("REM")) {
-//                        interactiveMsg = SessionController.UserRemoveFromCart(session.getCartId(), phone, stage, replyId);
-//                    } else if (replyId!=null && replyId.startsWith("BAY")) {
-//                        //enter name
-//                        session.setStage(1);
-//                        interactiveMsg = SessionController.EnterName(session.getCartId(), phone, stage);
-//                    }
+                    if (replyId != null && replyId.startsWith("SUR_")) {
+                        interactiveMsg = SessionController.GenerateResponseMessage(phone, stage, userInput);
+                    }
                 }
                 session.setExpiry(DateTimeUtil.expiryTimestamp(120));
                 userSessionRepository.save(session);
@@ -234,7 +195,7 @@ public class PushMessageController {
             session.setStage(0);
             session.setExpiry(DateTimeUtil.expiryTimestamp(120));
             userSessionRepository.save(session);
-            interactiveMsg = SessionController.GenerateResponseMessage(phone, 0, userInput);
+//            interactiveMsg = SessionController.GenerateResponseMessage(phone, 0, userInput);
         }
 
         try {
