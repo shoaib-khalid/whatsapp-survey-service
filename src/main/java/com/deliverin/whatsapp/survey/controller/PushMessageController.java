@@ -115,6 +115,14 @@ public class PushMessageController {
                     replyId = listReply.get("id").getAsString();
                     replyTitle = listReply.get("title").getAsString();
                 }
+            } else {
+                JsonObject button = messages.get("button").getAsJsonObject();
+                String buttonType = button.get("payload").getAsString();
+                if (buttonType.equals("SUR_SURE")) {
+                    replyId = buttonType;
+                } else if (buttonType.equals("SUR_NOPE")) {
+                    replyId = buttonType;
+                }
             }
             List<String> mp = new ArrayList<>();
             mp.add(phone);
@@ -130,6 +138,7 @@ public class PushMessageController {
         }
 
         Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "Incoming message. Msisdn:" + phone + " UserInput:" + userInput);
+        Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "Incoming message. replyId:" + replyId );
 
         List<Object[]> userSession = userSessionRepository.findActiveSession(phone);
         Interactive interactiveMsg = null;
@@ -176,10 +185,12 @@ public class PushMessageController {
                         Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "Send message completed");
                         return ResponseEntity.status(HttpStatus.OK).body(response);
                     }
+                } else if (type.equals("button")) {
+                    if (stage == 0) {
+                        interactiveMsg = SessionController.GenerateResponseMessage(phone, stage, userInput);
+                        session.setStage(1);
+                    }
                 } else {
-                    stage = 0;
-                    session.setStage(stage);
-                    interactiveMsg = SessionController.GenerateResponseMessage(phone, stage, userInput);
                     if (replyId != null && replyId.startsWith("SUR_")) {
                         interactiveMsg = SessionController.GenerateResponseMessage(phone, stage, userInput);
                     }
@@ -192,11 +203,12 @@ public class PushMessageController {
             //generate new session
             UserSession session = new UserSession();
             session.setMsisdn(phone);
-            session.setStage(0);
+            session.setStage(1);
             session.setExpiry(DateTimeUtil.expiryTimestamp(120));
             userSessionRepository.save(session);
-//            interactiveMsg = SessionController.GenerateResponseMessage(phone, 0, userInput);
+            interactiveMsg = SessionController.GenerateResponseMessage(phone, 0, userInput);
         }
+        Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "MESSAGE : ", interactiveMsg);
 
         try {
             FacebookCloud.sendInteractiveMessage(messageBody, interactiveMsg);
