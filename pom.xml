@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.deliverin.whatsapp</groupId>
-    <artifactId>survey</artifactId>
+    <artifactId>whatsapp-survey-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>survey</name>
+    <name>whatsapp-survey-service</name>
     <description>DeliverIn Survey</description>
     <properties>
         <java.version>1.8</java.version>
