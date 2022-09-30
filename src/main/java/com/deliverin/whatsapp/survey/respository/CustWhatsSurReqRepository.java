@@ -14,6 +14,6 @@ public interface CustWhatsSurReqRepository extends JpaRepository<CustWhatsSurReq
 
     List<CustWhatsSurReq> findAllByCustomerPhoneAndFormId(String phoneNo, Long formId);
 
-    CustWhatsSurReq findByFormIdAndQuestionIdAndStage(Long formId, Long questions, Integer stage);
+    CustWhatsSurReq findByCustomerPhoneAndFormIdAndQuestionIdAndStage(String customerPhone, Long formId, Long questions, Integer stage);
 
 }

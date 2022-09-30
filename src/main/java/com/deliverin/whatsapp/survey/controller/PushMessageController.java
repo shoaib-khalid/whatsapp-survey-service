@@ -161,7 +161,7 @@ public class PushMessageController {
 
 
             Questions repliesQues = questionsRepository.findByFormIdAndRanking(form.getId(), (long) stage);
-            CustWhatsSurReq optionalCustWhatsSurReq = custWhatsSurReqRepository.findByFormIdAndQuestionIdAndStage(form.getId(), repliesQues.getId(), stage);
+            CustWhatsSurReq optionalCustWhatsSurReq = custWhatsSurReqRepository.findByCustomerPhoneAndFormIdAndQuestionIdAndStage(session.getMsisdn(), form.getId(), repliesQues.getId(), stage);
 
             if (optionalCustWhatsSurReq != null) {
                 optionalCustWhatsSurReq.setFormId(form.getId());
@@ -194,7 +194,7 @@ public class PushMessageController {
                     interactiveMsg = sessionController.GenerateResponseMessage(phone, custWhatsSurReqList.size(), userInput, form, questions, options);
                     session.setStage(custWhatsSurReqList.size() + 1);
 
-                    CustWhatsSurReq optional = custWhatsSurReqRepository.findByFormIdAndQuestionIdAndStage(form.getId(), questions.getId(), stage);
+                    CustWhatsSurReq optional = custWhatsSurReqRepository.findByCustomerPhoneAndFormIdAndQuestionIdAndStage(session.getMsisdn(), form.getId(), questions.getId(), stage);
 
                     if (optional == null) {
                         CustWhatsSurReq custWhatsSurReq = new CustWhatsSurReq();
@@ -257,7 +257,7 @@ public class PushMessageController {
                         List<Options> options = optionRepository.findByQuestionId(questions.getId());
                         interactiveMsg = sessionController.GenerateResponseMessage(phone, custWhatsSurReqList.size(), userInput, form, questions, options);
                         session.setStage(stage + 1);
-                        CustWhatsSurReq optional = custWhatsSurReqRepository.findByFormIdAndQuestionIdAndStage(form.getId(), questions.getId(), stage + 1);
+                        CustWhatsSurReq optional = custWhatsSurReqRepository.findByCustomerPhoneAndFormIdAndQuestionIdAndStage(session.getMsisdn(), form.getId(), questions.getId(), stage + 1);
 
                         if (optional == null) {
                             CustWhatsSurReq custWhatsSurReq = new CustWhatsSurReq();
