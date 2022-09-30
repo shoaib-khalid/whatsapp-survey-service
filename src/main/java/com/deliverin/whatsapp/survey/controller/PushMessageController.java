@@ -322,6 +322,7 @@ public class PushMessageController {
                 String transaction = TxIdUtil.generateReferenceId("SUR");
 
                 Form form = formRespository.findByActive(true);
+                Questions questions = questionsRepository.findByFormIdAndRanking(form.getId(), 1L);
                 RestTemplate restTemplate = new RestTemplate();
                 HttpHeaders headers = new HttpHeaders();
                 WhatsappMessage request = new WhatsappMessage();
@@ -373,10 +374,12 @@ public class PushMessageController {
                 customer.setSentSurvey(true);
                 customerSurveyRepository.save(customer);
 
+
                 CustWhatsSurReq custWhatsSurReq = new CustWhatsSurReq();
                 custWhatsSurReq.setFormId(form.getId());
                 custWhatsSurReq.setCustomerPhone(customer.getCustomerPhone());
                 custWhatsSurReq.setStage(1);
+                custWhatsSurReq.setQuestionId(questions.getId());
                 custWhatsSurReq.setCreated(new Date());
                 System.err.println("CUSTOMER :::: " + custWhatsSurReq.toString());
                 custWhatsSurReqRepository.save(custWhatsSurReq);
