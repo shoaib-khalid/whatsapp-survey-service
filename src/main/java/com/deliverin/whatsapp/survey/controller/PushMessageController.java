@@ -376,7 +376,7 @@ public class PushMessageController {
                 CustWhatsSurReq custWhatsSurReq = new CustWhatsSurReq();
                 custWhatsSurReq.setFormId(form.getId());
                 custWhatsSurReq.setCustomerPhone(customer.getCustomerPhone());
-                custWhatsSurReq.setStage(0);
+                custWhatsSurReq.setStage(1);
                 custWhatsSurReq.setCreated(new Date());
                 System.err.println("CUSTOMER :::: " + custWhatsSurReq.toString());
                 custWhatsSurReqRepository.save(custWhatsSurReq);
