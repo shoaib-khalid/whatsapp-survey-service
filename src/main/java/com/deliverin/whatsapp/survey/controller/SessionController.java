@@ -6,14 +6,19 @@
 package com.deliverin.whatsapp.survey.controller;
 
 import com.deliverin.whatsapp.survey.SurveyApplication;
-import com.deliverin.whatsapp.survey.model.dto.UserPayment;
-import com.deliverin.whatsapp.survey.model.dto.UserSession;
+import com.deliverin.whatsapp.survey.model.dto.*;
 import com.deliverin.whatsapp.survey.provider.component.*;
+import com.deliverin.whatsapp.survey.provider.component.Footer;
+import com.deliverin.whatsapp.survey.provider.component.Header;
+import com.deliverin.whatsapp.survey.respository.OptionRepository;
+import com.deliverin.whatsapp.survey.respository.QuestionsRepository;
 import com.deliverin.whatsapp.survey.respository.UserPaymentRepository;
 import com.deliverin.whatsapp.survey.respository.UserSessionRepository;
 import com.deliverin.whatsapp.survey.service.*;
 import com.deliverin.whatsapp.survey.utils.Logger;
 import com.deliverin.whatsapp.survey.utils.Utilities;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,9 +26,16 @@ import java.util.List;
 /**
  * @author taufik
  */
+@Service
 public class SessionController {
 
-    public static Interactive GenerateResponseMessage(String msisdn, int stage, String userInput) {
+    @Autowired
+    QuestionsRepository questionsRepository;
+    @Autowired
+    static
+    OptionRepository optionRepository;
+
+    public Interactive GenerateResponseMessage(String msisdn, int stage, String userInput, Form form, Questions questions, List<Options> optionsList) {
 
         String logprefix = msisdn;
         //check user session
@@ -35,103 +47,136 @@ public class SessionController {
 
         Interactive interactiveMsg = new Interactive();
 
-        if (stage == 0) {
-//            Store store = ProductService.GetStoreDetails();
-            Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "First Question");
-            List<Category> categoryList = ProductService.GetProductCategory();
 
-            //main menu
-            headerText = "Q1) How satisfied are you with our service so far?";
-            String storeDescription = "Please Click Below to View the options provided";
-//            if (store.description!=null) {
-//                storeDescription = store.description.replaceAll("<[^>]*>", "");
-//                storeDescription = storeDescription.replaceAll("amp;","");
-//            }
-            bodyText = storeDescription;
-            Action action = new Action();
-            action.setButton("Rating");
+        headerText = questions.getQuestion();
+        String storeDescription = "Please Click Below to View the options provided";
 
-            Section section1 = new Section();
-            section1.setTitle("Satisfaction ");
-            List<Row> rowList = new ArrayList<>();
+        bodyText = storeDescription;
+        Action action = new Action();
+        action.setButton("Rating");
 
-            Row row1 = new Row("SUR_a", "Very Satisfied", "Very satisfied");
-            Row row2 = new Row("SUR_b", "Satisfied", "satisfied");
-            Row row3 = new Row("SUR_c", "Neutral", "Neutral");
-            Row row4 = new Row("SUR_d", "Unsatisfied", "Unsatisfied");
-            Row row5 = new Row("SUR_e", "Very unsatisfied", "Very unsatisfied");
-            rowList.add(row1);
-            rowList.add(row2);
-            rowList.add(row3);
-            rowList.add(row4);
-            rowList.add(row5);
-//            for (int i=0;i<categoryList.size();i++) {
-//                Category category = categoryList.get(i);
-//                String description = "";
-//                if (category.description!=null) {
-//                    description = category.description.replaceAll("<[^>]*>", "");
-//                }
-////                Row row1 = new Row("1", category.name, description);
-////                rowList.add(row1);
-//            }
-            section1.setRows(rowList);
-            sectionList.add(section1);
-            action.setSections(sectionList);
+        Section section1 = new Section();
+        section1.setTitle("Satisfaction ");
+        List<Row> rowList = new ArrayList<>();
 
-            interactiveMsg.setAction(action);
 
-            interactiveMsg.setType("list");
+        for (Options answer : optionsList) {
 
-            Header header = new Header();
-            header.setType("text");
-            header.setText(headerText);
-            interactiveMsg.setHeader(header);
-        } else if (stage == 1) {
-            Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "Second Question");
-            List<Category> categoryList = ProductService.GetProductCategory();
-
-            //main menu
-            headerText = "Q2) What would you like to see improved in our service?";
-            String storeDescription = "Please Click Below to View the options provided";
-
-            bodyText = storeDescription;
-            Action action = new Action();
-            action.setButton("Rating");
-
-            Section section1 = new Section();
-            section1.setTitle("Improvised");
-            List<Row> rowList = new ArrayList<>();
-
-            Row row1 = new Row("SUR_a", "Food options", "");
-            Row row2 = new Row("SUR_b", "Delivery Time", "");
-            Row row3 = new Row("SUR_c", "Checkout / Payment process", "");
-
-            rowList.add(row1);
-            rowList.add(row2);
-            rowList.add(row3);
-
-//            for (int i=0;i<categoryList.size();i++) {
-//                Category category = categoryList.get(i);
-//                String description = "";
-//                if (category.description!=null) {
-//                    description = category.description.replaceAll("<[^>]*>", "");
-//                }
-////                Row row1 = new Row("1", category.name, description);
-////                rowList.add(row1);
-//            }
-            section1.setRows(rowList);
-            sectionList.add(section1);
-            action.setSections(sectionList);
-
-            interactiveMsg.setAction(action);
-
-            interactiveMsg.setType("list");
-
-            Header header = new Header();
-            header.setType("text");
-            header.setText(headerText);
-            interactiveMsg.setHeader(header);
+            Row row = new Row(answer.getOption(), answer.getName(), "");
+            rowList.add(row);
         }
+
+        section1.setRows(rowList);
+        sectionList.add(section1);
+        action.setSections(sectionList);
+
+        interactiveMsg.setAction(action);
+
+        interactiveMsg.setType("list");
+
+        Header header = new Header();
+        header.setType("text");
+        header.setText(headerText);
+        interactiveMsg.setHeader(header);
+
+
+//        if (stage == 0) {
+////            Store store = ProductService.GetStoreDetails();
+//            Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "First Question");
+//            List<Category> categoryList = ProductService.GetProductCategory();
+//
+//            //main menu
+//            headerText = "Q1) How satisfied are you with our service so far?";
+//            String storeDescription = "Please Click Below to View the options provided";
+////            if (store.description!=null) {
+////                storeDescription = store.description.replaceAll("<[^>]*>", "");
+////                storeDescription = storeDescription.replaceAll("amp;","");
+////            }
+//            bodyText = storeDescription;
+//            Action action = new Action();
+//            action.setButton("Rating");
+//
+//            Section section1 = new Section();
+//            section1.setTitle("Satisfaction ");
+//            List<Row> rowList = new ArrayList<>();
+//
+//            Row row1 = new Row("SUR_a", "Very Satisfied", "Very satisfied");
+//            Row row2 = new Row("SUR_b", "Satisfied", "satisfied");
+//            Row row3 = new Row("SUR_c", "Neutral", "Neutral");
+//            Row row4 = new Row("SUR_d", "Unsatisfied", "Unsatisfied");
+//            Row row5 = new Row("SUR_e", "Very unsatisfied", "Very unsatisfied");
+//            rowList.add(row1);
+//            rowList.add(row2);
+//            rowList.add(row3);
+//            rowList.add(row4);
+//            rowList.add(row5);
+////            for (int i=0;i<categoryList.size();i++) {
+////                Category category = categoryList.get(i);
+////                String description = "";
+////                if (category.description!=null) {
+////                    description = category.description.replaceAll("<[^>]*>", "");
+////                }
+//////                Row row1 = new Row("1", category.name, description);
+//////                rowList.add(row1);
+////            }
+//            section1.setRows(rowList);
+//            sectionList.add(section1);
+//            action.setSections(sectionList);
+//
+//            interactiveMsg.setAction(action);
+//
+//            interactiveMsg.setType("list");
+//
+//            Header header = new Header();
+//            header.setType("text");
+//            header.setText(headerText);
+//            interactiveMsg.setHeader(header);
+//        } else if (stage == 1) {
+//            Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "Second Question");
+//            List<Category> categoryList = ProductService.GetProductCategory();
+//
+//            //main menu
+//            headerText = "Q2) What would you like to see improved in our service?";
+//            String storeDescription = "Please Click Below to View the options provided";
+//
+//            bodyText = storeDescription;
+//            Action action = new Action();
+//            action.setButton("Rating");
+//
+//            Section section1 = new Section();
+//            section1.setTitle("Improvised");
+//            List<Row> rowList = new ArrayList<>();
+//
+//            Row row1 = new Row("SUR_a", "Food options", "");
+//            Row row2 = new Row("SUR_b", "Delivery Time", "");
+//            Row row3 = new Row("SUR_c", "Checkout / Payment process", "");
+//
+//            rowList.add(row1);
+//            rowList.add(row2);
+//            rowList.add(row3);
+//
+////            for (int i=0;i<categoryList.size();i++) {
+////                Category category = categoryList.get(i);
+////                String description = "";
+////                if (category.description!=null) {
+////                    description = category.description.replaceAll("<[^>]*>", "");
+////                }
+//////                Row row1 = new Row("1", category.name, description);
+//////                rowList.add(row1);
+////            }
+//            section1.setRows(rowList);
+//            sectionList.add(section1);
+//            action.setSections(sectionList);
+//
+//            interactiveMsg.setAction(action);
+//
+//            interactiveMsg.setType("list");
+//
+//            Header header = new Header();
+//            header.setType("text");
+//            header.setText(headerText);
+//            interactiveMsg.setHeader(header);
+//        }
         Body body = new Body();
         body.setText(bodyText);
         Footer footer = new Footer();

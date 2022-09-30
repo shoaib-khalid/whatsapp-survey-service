@@ -4,23 +4,20 @@ package com.deliverin.whatsapp.survey.model.dto;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 
 @Entity
 @Getter
 @Setter
-@Table(name = "question")
+@Table(name = "form")
 @ToString
-public class Questions {
+public class Form {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
-    String question;
-    Long ranking;
-    Long formId;
-
+    String name;
+    Long noQuestion;
+    Boolean active;
 }

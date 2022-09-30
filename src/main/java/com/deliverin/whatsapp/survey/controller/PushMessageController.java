@@ -3,14 +3,11 @@ package com.deliverin.whatsapp.survey.controller;
 import com.deliverin.whatsapp.survey.SurveyApplication;
 import com.deliverin.whatsapp.survey.model.dao.WhatsappMessage;
 import com.deliverin.whatsapp.survey.model.dao.WhatsappTemplate;
-import com.deliverin.whatsapp.survey.model.dto.CustomerSurvey;
-import com.deliverin.whatsapp.survey.model.dto.UserSession;
+import com.deliverin.whatsapp.survey.model.dto.*;
 import com.deliverin.whatsapp.survey.provider.component.ButtonParameter;
 import com.deliverin.whatsapp.survey.provider.component.Interactive;
 import com.deliverin.whatsapp.survey.provider.whatsapp.FacebookCloud;
-import com.deliverin.whatsapp.survey.respository.CustomerSurveyRepository;
-import com.deliverin.whatsapp.survey.respository.UserPaymentRepository;
-import com.deliverin.whatsapp.survey.respository.UserSessionRepository;
+import com.deliverin.whatsapp.survey.respository.*;
 import com.deliverin.whatsapp.survey.utils.DateTimeUtil;
 import com.deliverin.whatsapp.survey.utils.HttpResponse;
 import com.deliverin.whatsapp.survey.utils.Logger;
@@ -49,9 +46,21 @@ public class PushMessageController {
     @Value("${whatsapp.service.template.url:https://api.symplified.it/whatsapp-java-service/v1/templatemessage/push}")
     private String whatsappServiceUrl;
 
+    @Autowired
+    SessionController sessionController;
+
 
     @Autowired
     CustomerSurveyRepository customerSurveyRepository;
+
+    @Autowired
+    FormRespository formRespository;
+    @Autowired
+    QuestionsRepository questionsRepository;
+    @Autowired
+    OptionRepository optionRepository;
+    @Autowired
+    CustWhatsSurReqRepository custWhatsSurReqRepository;
 
 
     @PostMapping(path = {"/survey/webhook"}, name = "push-template-message-post")
@@ -142,57 +151,70 @@ public class PushMessageController {
 
         List<Object[]> userSession = userSessionRepository.findActiveSession(phone);
         Interactive interactiveMsg = null;
+        Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "UserSession  : " + userSession);
+        Form form = formRespository.findByActive(true);
+
         if (!userSession.isEmpty()) {
-            //get stage
             Optional<UserSession> sessionOpt = userSessionRepository.findById(phone);
             UserSession session = sessionOpt.get();
+            int stage = session.getStage();
 
-            if (userInput != null && userInput.equals("00")) {
-                //main menu
-                Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "Show main menu");
-                session.setStage(0);
-                session.setExpiry(DateTimeUtil.expiryTimestamp(120));
-                userSessionRepository.save(session);
-                interactiveMsg = SessionController.GenerateResponseMessage(phone, 0, userInput);
-            } else if (userInput != null && userInput.equals("99")) {
-                //view cart
-                Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "View cart");
-                interactiveMsg = SessionController.UserViewCart(session.getCartId());
-                session.setExpiry(DateTimeUtil.expiryTimestamp(120));
-                userSessionRepository.save(session);
-            } else if (userInput != null && userInput.equals("88")) {
-                //checkout
-                Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "Checkout");
-                interactiveMsg = SessionController.Checkout(session.getCartId());
-                session.setExpiry(DateTimeUtil.expiryTimestamp(120));
-                userSessionRepository.save(session);
-            } else {
-                int stage = session.getStage();
-                if (type.equals("input")) {
-                    if (stage == 0) {
-                        interactiveMsg = SessionController.GenerateResponseMessage(phone, stage, userInput);
-                        session.setStage(1);
-                    } else if (stage == 1) {
-                        interactiveMsg = SessionController.GenerateResponseMessage(phone, stage, userInput);
-                        session.setStage(2);
-                    } else if (stage == 2) {
-                        //generate payment form
-                        session.setStage(3);
-                        session.setEmail(userInput);
-                        session.setExpiry(DateTimeUtil.expiryTimestamp(120));
-                        userSessionRepository.save(session);
 
-                        Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "Send message completed");
-                        return ResponseEntity.status(HttpStatus.OK).body(response);
+            Questions repliesQues = questionsRepository.findByFormIdAndRanking(form.getId(), (long) stage);
+            CustWhatsSurReq optionalCustWhatsSurReq = custWhatsSurReqRepository.findByFormIdAndQuestionIdAndStage(form.getId(), repliesQues.getId(), stage);
+
+            if (optionalCustWhatsSurReq != null) {
+                optionalCustWhatsSurReq.setFormId(form.getId());
+                optionalCustWhatsSurReq.setCustomerPhone(session.getMsisdn());
+                optionalCustWhatsSurReq.setStage(stage);
+                optionalCustWhatsSurReq.setQuestionId(repliesQues.getId());
+                Options customerAns = optionRepository.findByQuestionIdAndOption(repliesQues.getId(), replyId);
+                if (customerAns != null) {
+                    optionalCustWhatsSurReq.setOptionId(customerAns.getId());
+                } else {
+                    System.err.println("  IS SURE");
+                }
+                optionalCustWhatsSurReq.setCreated(new Date());
+                custWhatsSurReqRepository.save(optionalCustWhatsSurReq);
+            }
+
+            //get stage
+
+            List<CustWhatsSurReq> custWhatsSurReqList = custWhatsSurReqRepository.findAllByCustomerPhoneAndFormId(session.getMsisdn(), form.getId());
+
+
+            Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "Type : " + type);
+
+
+            if (type.equals("button")) {
+                if (Objects.equals(replyId, "SUR_SURE")) {
+
+                    Questions questions = questionsRepository.findByFormIdAndRanking(form.getId(), 2L);
+                    List<Options> options = optionRepository.findByQuestionId(questions.getId());
+                    interactiveMsg = sessionController.GenerateResponseMessage(phone, custWhatsSurReqList.size(), userInput, form, questions, options);
+                    session.setStage(custWhatsSurReqList.size() + 1);
+
+                    CustWhatsSurReq optional = custWhatsSurReqRepository.findByFormIdAndQuestionIdAndStage(form.getId(), questions.getId(), stage);
+
+                    if (optional == null) {
+                        CustWhatsSurReq custWhatsSurReq = new CustWhatsSurReq();
+                        custWhatsSurReq.setFormId(form.getId());
+                        custWhatsSurReq.setCustomerPhone(session.getMsisdn());
+                        custWhatsSurReq.setStage(stage + 1);
+                        custWhatsSurReq.setQuestionId(questions.getId());
+                        custWhatsSurReq.setCreated(new Date());
+                        custWhatsSurReqRepository.save(custWhatsSurReq);
                     }
-                } else if (type.equals("button")) {
-                    if (stage == 0) {
-                        interactiveMsg = SessionController.GenerateResponseMessage(phone, stage, userInput);
-                        session.setStage(1);
-                    } else if (stage == 1) {
-                        interactiveMsg = SessionController.GenerateResponseMessage(phone, stage, userInput);
-                        session.setStage(2);
-                    } else {
+
+                } else {
+                    return ResponseEntity.status(HttpStatus.OK).body(response);
+                }
+
+            } else {
+
+                if (replyId != null && replyId.startsWith("SUR_")) {
+
+                    if (stage == form.getNoQuestion()) {
                         String transaction = TxIdUtil.generateReferenceId("SUR");
                         CustomerSurvey customer = customerSurveyRepository.getOne(phone);
 
@@ -207,7 +229,7 @@ public class PushMessageController {
                         r.setMerchantToken("");
 
                         WhatsappTemplate template = new WhatsappTemplate();
-                        template.setName("deliverin_survey_thankyou");
+                        template.setName("deliverin_survey_thankyou2");
                         String[] message = {customer.getParam1()};
 
                         template.setParameters(message);
@@ -229,24 +251,32 @@ public class PushMessageController {
                         } catch (Exception ex) {
                             Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "could not send Survey res: " + ex.getMessage(), "");
                         }
-                    }
-                } else {
-                    if (replyId != null && replyId.startsWith("SUR_")) {
-                        interactiveMsg = SessionController.GenerateResponseMessage(phone, stage, userInput);
+                        return ResponseEntity.status(HttpStatus.OK).body(response);
+                    } else {
+                        Questions questions = questionsRepository.findByFormIdAndRanking(form.getId(), (long) stage + 1);
+                        List<Options> options = optionRepository.findByQuestionId(questions.getId());
+                        interactiveMsg = sessionController.GenerateResponseMessage(phone, custWhatsSurReqList.size(), userInput, form, questions, options);
+                        session.setStage(stage + 1);
+                        CustWhatsSurReq optional = custWhatsSurReqRepository.findByFormIdAndQuestionIdAndStage(form.getId(), questions.getId(), stage + 1);
+
+                        if (optional == null) {
+                            CustWhatsSurReq custWhatsSurReq = new CustWhatsSurReq();
+                            custWhatsSurReq.setFormId(form.getId());
+                            custWhatsSurReq.setCustomerPhone(session.getMsisdn());
+                            custWhatsSurReq.setStage(stage + 1);
+                            custWhatsSurReq.setQuestionId(questions.getId());
+                            custWhatsSurReq.setCreated(new Date());
+                            System.err.println("CUSTOMER :::: " + custWhatsSurReq.toString());
+                            custWhatsSurReqRepository.save(custWhatsSurReq);
+                        }
+
                     }
                 }
-                session.setExpiry(DateTimeUtil.expiryTimestamp(120));
-                userSessionRepository.save(session);
             }
-        } else {
-            //generate new cart
-            //generate new session
-            UserSession session = new UserSession();
-            session.setMsisdn(phone);
-            session.setStage(1);
-            session.setExpiry(DateTimeUtil.expiryTimestamp(120));
+            session.setUpdated(new Date());
+            session.setExpiry(DateTimeUtil.expiryTimestamp(1800));
             userSessionRepository.save(session);
-            interactiveMsg = SessionController.GenerateResponseMessage(phone, 0, userInput);
+
         }
         Logger.application.info(Logger.pattern, SurveyApplication.VERSION, logprefix, "MESSAGE : ", interactiveMsg);
 
@@ -291,6 +321,7 @@ public class PushMessageController {
             if (!customer.getSentSurvey()) {
                 String transaction = TxIdUtil.generateReferenceId("SUR");
 
+                Form form = formRespository.findByActive(true);
                 RestTemplate restTemplate = new RestTemplate();
                 HttpHeaders headers = new HttpHeaders();
                 WhatsappMessage request = new WhatsappMessage();
@@ -302,7 +333,7 @@ public class PushMessageController {
                 request.setMerchantToken("");
 
                 WhatsappTemplate template = new WhatsappTemplate();
-                template.setName("deliverin_survey");
+                template.setName(form.getName());
                 String[] message = {customer.getCustomerName()};
 
                 template.setParameters(message);
@@ -342,6 +373,27 @@ public class PushMessageController {
                 customer.setSentSurvey(true);
                 customerSurveyRepository.save(customer);
 
+                CustWhatsSurReq custWhatsSurReq = new CustWhatsSurReq();
+                custWhatsSurReq.setFormId(form.getId());
+                custWhatsSurReq.setCustomerPhone(customer.getCustomerPhone());
+                custWhatsSurReq.setStage(0);
+                custWhatsSurReq.setCreated(new Date());
+                System.err.println("CUSTOMER :::: " + custWhatsSurReq.toString());
+                custWhatsSurReqRepository.save(custWhatsSurReq);
+                Optional<UserSession> sessionOpt = userSessionRepository.findById(customer.getCustomerPhone());
+                if (!sessionOpt.isPresent()) {
+                    UserSession userSession = new UserSession();
+                    userSession.setStage(1);
+                    userSession.setMsisdn(customer.getCustomerPhone());
+                    userSession.setExpiry(DateTimeUtil.expiryTimestamp(3600));
+                    userSession.setCreated(new Date());
+                    userSessionRepository.save(userSession);
+                } else {
+                    sessionOpt.get().setStage(1);
+                    sessionOpt.get().setExpiry(DateTimeUtil.expiryTimestamp(3600));
+                    sessionOpt.get().setUpdated(new Date());
+                    userSessionRepository.save(sessionOpt.get());
+                }
             }
         }
     }
