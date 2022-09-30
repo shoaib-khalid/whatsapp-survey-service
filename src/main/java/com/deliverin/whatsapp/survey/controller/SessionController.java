@@ -181,9 +181,9 @@ public class SessionController {
         body.setText(bodyText);
         Footer footer = new Footer();
         footer.setText("Please Click Below To Answer The Questions");
-
+//
         interactiveMsg.setBody(body);
-        interactiveMsg.setFooter(footer);
+//        interactiveMsg.setFooter(footer);
 
         return interactiveMsg;
     }
